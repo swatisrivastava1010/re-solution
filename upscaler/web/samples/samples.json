@@ -1,0 +1,67 @@
+[
+  {
+    "id": "interior",
+    "title": "Interiors & furniture",
+    "caption": "Living room of the Farnsworth House (Mies van der Rohe, 1951), Plano, Illinois",
+    "preset": "interiors",
+    "file": "interior.jpg",
+    "thumb": "interior-thumb.jpg",
+    "width": 1024,
+    "height": 795,
+    "credit": "Carol M. Highsmith / Library of Congress, Carol M. Highsmith Archive",
+    "license": "Public domain",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Interior_views_of_the_1951_Farnsworth,_a_modernist_classic_%22glass_house%22_designed_by_architect_Mies_van_der_Rohe,_Plano,_Illinois_LCCN2011633480.tif"
+  },
+  {
+    "id": "product",
+    "title": "Products",
+    "caption": "Teapot designed by Christopher Dresser, made by James Dixon & Sons, ca. 1879",
+    "preset": "products",
+    "file": "product.jpg",
+    "thumb": "product-thumb.jpg",
+    "width": 1024,
+    "height": 1024,
+    "credit": "The Metropolitan Museum of Art (Christopher Dresser, designer; James Dixon & Sons, maker)",
+    "license": "CC0",
+    "source_url": "https://www.metmuseum.org/art/collection/search/823191"
+  },
+  {
+    "id": "old-photo",
+    "title": "Old photos",
+    "caption": "Power house mechanic working on steam pump, 1920",
+    "preset": "old_photos",
+    "file": "old-photo.jpg",
+    "thumb": "old-photo-thumb.jpg",
+    "width": 736,
+    "height": 1024,
+    "credit": "Lewis Wickes Hine / U.S. National Archives (Records of the Work Projects Administration, 69-RH-4L-2)",
+    "license": "Public domain",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Lewis_Hine_Power_house_mechanic_working_on_steam_pump.jpg"
+  },
+  {
+    "id": "food",
+    "title": "Food",
+    "caption": "Assortment of fruits, vegetables, nuts and grains (USDA ARS image K3839-3)",
+    "preset": "products",
+    "file": "food.jpg",
+    "thumb": "food-thumb.jpg",
+    "width": 950,
+    "height": 1024,
+    "credit": "Keith Weller / USDA Agricultural Research Service",
+    "license": "Public domain",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Foods_(cropped).jpg"
+  },
+  {
+    "id": "illustration",
+    "title": "Illustration / art",
+    "caption": "Under the Wave off Kanagawa (The Great Wave), Katsushika Hokusai, ca. 1830-32",
+    "preset": "illustration",
+    "file": "illustration.jpg",
+    "thumb": "illustration-thumb.jpg",
+    "width": 1024,
+    "height": 688,
+    "credit": "Katsushika Hokusai / The Metropolitan Museum of Art (H. O. Havemeyer Collection)",
+    "license": "CC0",
+    "source_url": "https://www.metmuseum.org/art/collection/search/45434"
+  }
+]

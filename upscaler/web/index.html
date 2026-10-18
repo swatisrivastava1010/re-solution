@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>Re:Solution</title>
+  <meta name="description" content="Re:Solution makes pictures up to 16K and videos 4K, right on this computer.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23513229'/%3E%3Cg fill='none' stroke='%23F4F1E2' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='7' y='15' width='10' height='10' rx='2'/%3E%3Cpath d='M18 14l6-6M19 8h5v5'/%3E%3C/g%3E%3C/svg%3E">
+  <!-- The theme picked with the header button, applied before the page is drawn so it never flashes. -->
+  <script>try { var t = localStorage.getItem('resolution.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.colorScheme = t; } catch (e) {}</script>
+  <link rel="stylesheet" href="app.css">
+  <script src="wizard.js" defer></script>
+  <script src="js/lifecycle.js" defer></script>
+  <script src="js/compare.js" defer></script>
+  <script src="js/deepzoom.js" defer></script>
+  <script src="js/styles.js" defer></script>
+  <script src="js/viewer.js" defer></script>
+  <script src="js/videocompare.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#/photos">
+        <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-logo"/></svg></span>
+        <span class="brand-name">Re<span class="brand-colon">:</span>Solution</span>
+      </a>
+      <nav class="tabs" aria-label="Main" hidden>
+        <a class="tab" href="#/photos" data-route="photos"><svg class="icon" aria-hidden="true"><use href="#i-image"/></svg><span>Photos</span></a>
+        <a class="tab" href="#/videos" data-route="videos"><svg class="icon" aria-hidden="true"><use href="#i-video"/></svg><span>Videos</span></a>
+        <a class="tab" href="#/settings" data-route="settings" data-host-only hidden><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg><span>Settings</span></a>
+        <a class="tab" href="#/about" data-route="about"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span>About</span></a>
+      </nav>
+      <div class="topbar-actions">
+        <button type="button" class="share-button" id="share-button" data-host-only hidden data-sharing="off" aria-haspopup="dialog" aria-controls="share-dialog">
+          <span class="share-icon" aria-hidden="true"><svg class="icon"><use href="#i-wifi"/></svg><span class="share-live"></span></span><span class="share-button-text" id="share-button-text">Share on Wi-Fi</span>
+        </button>
+        <button type="button" class="icon-button theme-button" id="theme-button" aria-label="Theme: Auto (follows your computer). Switch to Light" title="Theme: Auto (follows your computer). Switch to Light">
+          <svg class="icon" aria-hidden="true"><use href="#i-monitor"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="banner" id="connection-banner" role="status" hidden>
+    <svg class="icon" aria-hidden="true"><use href="#i-wifi"/></svg>
+    <span>Can't reach Re:Solution right now. Trying again&hellip;</span>
+  </div>
+
+  <main id="main" tabindex="-1">
+
+    <!-- Starting up / can't connect -->
+    <section class="view view-center" data-view="loading">
+      <div class="boot">
+        <span class="boot-mark"><svg class="icon" aria-hidden="true"><use href="#i-logo"/></svg></span>
+        <p class="boot-text" id="boot-text">Opening Re:Solution&hellip;</p>
+        <noscript><p class="boot-text">Re:Solution needs JavaScript. Turn it on in your browser's settings, then reload this page.</p></noscript>
+        <button type="button" class="btn btn-secondary" id="boot-retry" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg>Try again
+        </button>
+      </div>
+    </section>
+
+    <!-- Password screen for guests -->
+    <section class="view view-center" data-view="login" aria-labelledby="login-title" hidden>
+      <form class="login" id="login-form" novalidate>
+        <span class="login-mark"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></span>
+        <h1 id="login-title" tabindex="-1">Re:Solution has a password here</h1>
+        <p class="muted">Ask the person who runs it on their computer.</p>
+        <label class="field-label" for="login-password">Password</label>
+        <input class="input" id="login-password" type="password" autocomplete="current-password" required>
+        <p class="field-error" id="login-error" role="alert" hidden></p>
+        <button type="submit" class="btn btn-primary btn-block">Open Re:Solution</button>
+      </form>
+    </section>
+
+    <!-- Photos -->
+    <section class="view" data-view="photos" aria-labelledby="photos-title" hidden>
+      <div class="intro">
+        <h1 id="photos-title" tabindex="-1">Make your pictures bigger</h1>
+        <p class="lede">Add a picture, pick a size, and get a sharp, detailed copy. Noise and compression blur get cleaned up on the way.</p>
+        <ul class="pills" aria-label="Good to know">
+          <li class="pill"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Runs on your computer</li>
+          <li class="pill"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>No watermark</li>
+          <li class="pill"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>No sign-up</li>
+          <li class="pill"><svg class="icon" aria-hidden="true"><use href="#i-maximize"/></svg>Up to 16K</li>
+        </ul>
+        <p class="pill pill-warn cpu-note" id="cpu-note" hidden><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span id="cpu-note-text">CPU only: slow</span></p>
+      </div>
+
+      <form class="steps" id="photo-form" novalidate>
+        <section class="step" id="photo-step-files" aria-labelledby="photo-step-files-title">
+          <span class="step-num" aria-hidden="true"><span class="step-digit">1</span><svg class="icon"><use href="#i-check"/></svg></span>
+          <div class="step-head">
+            <h2 class="step-title" id="photo-step-files-title">Add your pictures</h2>
+            <p class="step-summary" id="photo-step-files-summary" hidden></p>
+            <button type="button" class="step-toggle" data-step-toggle aria-expanded="true" aria-controls="photo-step-files-body"><span class="step-toggle-text">Hide</span><span class="sr-only">: Add your pictures</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+          </div>
+          <div class="step-body" id="photo-step-files-body">
+            <div class="dropzone" id="photo-drop" data-pick="photo-input">
+              <span class="crop crop-tl" aria-hidden="true"></span><span class="crop crop-tr" aria-hidden="true"></span>
+              <span class="crop crop-bl" aria-hidden="true"></span><span class="crop crop-br" aria-hidden="true"></span>
+              <span class="dz-icon" aria-hidden="true"><svg class="icon"><use href="#i-image"/></svg></span>
+              <p class="dz-title">Drag pictures here</p>
+              <button type="button" class="btn btn-secondary dz-button" data-pick="photo-input">
+                <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span class="dz-button-text">Choose pictures</span>
+              </button>
+              <p class="dz-hint" id="photo-hint">Or paste one. JPEG, PNG, HEIC, TIFF, camera RAW and more, up to 300 MB each.</p>
+              <input type="file" id="photo-input" accept="image/*,.heic,.heif,.tif,.tiff,.avif,.dng,.cr2,.cr3,.nef,.arw,.raf,.orf,.rw2,.psd,.svg" multiple hidden aria-label="Choose pictures">
+            </div>
+            <div class="samples" id="sample-row" hidden>
+              <p class="samples-label" id="samples-label"><svg class="icon" aria-hidden="true"><use href="#i-image"/></svg>No picture handy? Try a sample</p>
+              <ul class="sample-list" id="sample-list" aria-labelledby="samples-label"></ul>
+            </div>
+            <!-- The pictures added so far: a compact grid or list, filters and bulk actions, or folded to one strip. -->
+            <div class="tray" id="photo-tray" data-view="grid" data-folded="false" hidden>
+              <div class="tray-head">
+                <p class="tray-summary" id="tray-summary"></p>
+                <div class="tray-tools">
+                  <div class="segmented tray-view" id="tray-view" role="radiogroup" aria-label="Show the pictures as">
+                    <label><input type="radio" name="tray-view" value="grid" checked><span><svg class="icon" aria-hidden="true"><use href="#i-grid"/></svg>Grid</span></label>
+                    <label><input type="radio" name="tray-view" value="list"><span><svg class="icon" aria-hidden="true"><use href="#i-list"/></svg>List</span></label>
+                  </div>
+                  <button type="button" class="btn btn-quiet btn-sm tray-fold" id="tray-fold" aria-expanded="true" aria-controls="tray-body"><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg><span id="tray-fold-text">Show less</span></button>
+                </div>
+              </div>
+              <div class="tray-checking" id="tray-checking" hidden>
+                <p class="tray-checking-text" id="tray-checking-text"></p>
+                <div class="progress" role="progressbar" aria-label="Checking your pictures" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+              </div>
+              <div class="tray-body" id="tray-body">
+                <div class="tray-filters" id="tray-filters" role="group" aria-label="Show only" hidden></div>
+                <div class="tray-actions" id="tray-actions">
+                  <label class="tray-check-all"><input type="checkbox" id="tray-select-all"><span id="tray-select-text">Select all</span></label>
+                  <button type="button" class="btn btn-quiet btn-sm" id="tray-suggest" hidden><svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg><span id="tray-suggest-text">Use suggestions for all</span></button>
+                  <button type="button" class="btn btn-quiet btn-sm btn-danger-text" id="tray-remove" hidden><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>Remove selected</button>
+                  <span class="thumbs-clear" id="photo-clear-row">
+                    <button type="button" class="btn btn-quiet btn-sm btn-danger-text" id="photo-clear"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>Remove all</button>
+                  </span>
+                </div>
+                <ul class="tray-items" id="photo-list" aria-label="Pictures to upscale"></ul>
+                <p class="tray-empty" id="tray-empty" hidden></p>
+                <button type="button" class="btn btn-secondary btn-sm tray-more" id="tray-more" hidden>Show 48 more</button>
+              </div>
+              <ul class="tray-strip" id="tray-strip" aria-label="Pictures to upscale" hidden></ul>
+              <!-- Shown while a picture has keyboard focus: the pictures are one Tab stop. -->
+              <p class="tray-keys" id="tray-keys" aria-hidden="true">Use the arrow keys to move between pictures. Tab moves on.</p>
+            </div>
+            <p class="field-error" id="photo-error" role="alert" hidden></p>
+          </div>
+        </section>
+
+        <section class="step" id="photo-step-size" aria-labelledby="photo-step-size-title">
+          <span class="step-num" aria-hidden="true"><span class="step-digit">2</span><svg class="icon"><use href="#i-check"/></svg></span>
+          <div class="step-head">
+            <h2 class="step-title" id="photo-step-size-title">Pick a size</h2>
+            <p class="step-summary" id="photo-step-size-summary" hidden></p>
+            <button type="button" class="step-toggle" data-step-toggle aria-expanded="true" aria-controls="photo-step-size-body"><span class="step-toggle-text">Hide</span><span class="sr-only">: Pick a size</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+          </div>
+          <div class="step-body" id="photo-step-size-body">
+            <div class="presets" id="preset-row" hidden>
+              <p class="presets-label" id="preset-label">Quick start: what is it for?</p>
+              <div class="preset-chips" id="preset-chips" role="group" aria-labelledby="preset-label"></div>
+              <p class="hint preset-hint" id="preset-hint" aria-live="polite"></p>
+            </div>
+            <div class="chips" id="size-chips" role="radiogroup" aria-labelledby="photo-step-size-title"></div>
+            <p class="hint" id="size-hint" aria-live="polite"></p>
+          </div>
+        </section>
+
+        <section class="step" id="photo-step-mode" aria-labelledby="photo-step-mode-title">
+          <span class="step-num" aria-hidden="true"><span class="step-digit">3</span><svg class="icon"><use href="#i-check"/></svg></span>
+          <div class="step-head">
+            <h2 class="step-title" id="photo-step-mode-title">Choose the quality</h2>
+            <p class="step-summary" id="photo-step-mode-summary" hidden></p>
+            <button type="button" class="step-toggle" data-step-toggle aria-expanded="true" aria-controls="photo-step-mode-body"><span class="step-toggle-text">Hide</span><span class="sr-only">: Choose the quality</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+          </div>
+          <div class="step-body" id="photo-step-mode-body">
+            <div class="modes" id="photo-modes" role="group" aria-labelledby="photo-step-mode-title"></div>
+
+            <!-- Moved by app.js to sit right under the Photo-real card, so #photo-modes is a group, not a radiogroup. -->
+            <div class="pr-panel" id="photoreal-panel" data-theme="photoreal" hidden>
+              <div class="pr-levels">
+                <p class="field-label" id="level-label">How much new detail Photo-real adds</p>
+                <div class="level-options" id="level-options" role="radiogroup" aria-labelledby="level-label"></div>
+                <p class="hint pr-mixed" id="level-mixed" hidden>Your pictures use different levels. Pick one to use it for all of them.</p>
+              </div>
+              <div class="pr-sliders">
+                <div class="option">
+                  <div class="option-head">
+                    <label class="field-label" for="creativity">Creativity</label>
+                    <output class="option-value" id="creativity-value" for="creativity">0%</output>
+                  </div>
+                  <input class="range" type="range" id="creativity" min="0" max="100" step="5" value="0" aria-describedby="creativity-help">
+                  <p class="hint" id="creativity-help">Higher lets Photo-real invent more new detail. Keep it low for faces, logos and text.</p>
+                </div>
+                <div class="option">
+                  <div class="option-head">
+                    <label class="field-label" for="stay-close">Stay close to the original</label>
+                    <output class="option-value" id="stay-close-value" for="stay-close">0%</output>
+                  </div>
+                  <input class="range" type="range" id="stay-close" min="0" max="100" step="5" value="0" aria-describedby="stay-close-help">
+                  <p class="hint" id="stay-close-help">At 0% you get Photo-real's full result. Raise it to blend back toward a plain enlargement of your picture.</p>
+                </div>
+              </div>
+            </div>
+
+            <p class="hint mode-mixed" id="mode-mixed" hidden>Your pictures use different qualities: each picture shows its own. Pick one here to use it for all of them.</p>
+
+            <details class="disclosure" id="more-modes" hidden>
+              <summary><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg>More modes</summary>
+              <div class="modes modes-more" id="photo-modes-more" role="radiogroup" aria-label="More modes"></div>
+            </details>
+
+            <div class="cloud-modes" id="cloud-modes-wrap" hidden>
+              <h3 class="subhead"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg>Cloud (paid per photo)</h3>
+              <div class="modes modes-cloud" id="photo-modes-cloud" role="radiogroup" aria-label="Cloud quality"></div>
+            </div>
+
+            <div class="alert alert-warn mode-notice" id="photo-mode-notice" role="status" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+              <p id="photo-mode-notice-text"></p>
+            </div>
+
+            <div class="unlock" id="unlock-cloud">
+              <span class="unlock-icon" aria-hidden="true"><svg class="icon"><use href="#i-cloud"/></svg></span>
+              <div class="unlock-text">
+                <p class="unlock-title" id="unlock-title">Want the very best?</p>
+                <p class="unlock-body" id="unlock-body">Connect a paid cloud service. It's optional and costs a few cents per photo.</p>
+              </div>
+              <button type="button" class="btn btn-secondary" id="unlock-button">Unlock cloud quality</button>
+            </div>
+            <ul class="own-keys" id="own-keys" aria-label="Your own cloud keys" hidden></ul>
+
+          </div>
+        </section>
+
+        <section class="step" id="photo-step-file" aria-labelledby="photo-step-file-title">
+          <span class="step-num" aria-hidden="true"><span class="step-digit">4</span><svg class="icon"><use href="#i-check"/></svg></span>
+          <div class="step-head">
+            <h2 class="step-title" id="photo-step-file-title">Choose how it's saved</h2>
+            <p class="step-summary" id="photo-step-file-summary" hidden></p>
+            <button type="button" class="step-toggle" data-step-toggle aria-expanded="true" aria-controls="photo-step-file-body"><span class="step-toggle-text">Hide</span><span class="sr-only">: Choose how it's saved</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+          </div>
+          <div class="step-body" id="photo-step-file-body">
+            <div class="file-grid">
+              <div class="option" role="radiogroup" aria-labelledby="format-label">
+                <p class="field-label" id="format-label">File type</p>
+                <div class="chips chips-sm" id="format-chips"></div>
+                <p class="hint" id="format-hint" aria-live="polite"></p>
+              </div>
+              <div class="option" role="radiogroup" aria-labelledby="dpi-label">
+                <p class="field-label" id="dpi-label">Print resolution (DPI)</p>
+                <div class="segmented" id="dpi-chips"></div>
+                <p class="hint">Only sets the print size saved in the file. The pixels stay the same.</p>
+              </div>
+            </div>
+
+            <details class="disclosure options" id="photo-options">
+              <summary><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg>More options</summary>
+              <div class="options-grid">
+                <div class="option" id="strength-option">
+                  <div class="option-head">
+                    <label class="field-label" for="strength">How much new detail</label>
+                    <output class="option-value" id="strength-value" for="strength">100%</output>
+                  </div>
+                  <input class="range" type="range" id="strength" min="0" max="100" step="5" value="100" aria-describedby="strength-help">
+                  <p class="hint" id="strength-help">Lower it if the result looks too sharp. (Photo-real has its own sliders above.)</p>
+                </div>
+                <div class="option" role="radiogroup" aria-labelledby="grain-label">
+                  <p class="field-label" id="grain-label">Film grain</p>
+                  <div class="segmented">
+                    <label><input type="radio" name="grain" value="off" checked><span>Off</span></label>
+                    <label><input type="radio" name="grain" value="subtle"><span>Subtle</span></label>
+                    <label><input type="radio" name="grain" value="medium"><span>Medium</span></label>
+                  </div>
+                  <p class="hint">A little grain can make big prints look more natural.</p>
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <div class="start">
+          <div class="estimate" id="estimate" aria-live="polite" hidden></div>
+          <ul class="estimate-warnings" id="estimate-warnings" hidden></ul>
+          <div class="cloud-notice" id="photo-cloud-notice" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg>
+            <p id="photo-cloud-notice-text"></p>
+          </div>
+          <p class="start-where muted" id="photo-where"></p>
+          <p class="field-error" id="photo-submit-error" role="alert" hidden></p>
+        </div>
+
+        <!-- Stays at the bottom of the screen while the steps scroll by, then settles here at the end. -->
+        <div class="action-bar" id="photo-action-bar">
+          <div class="action-bar-text">
+            <p class="action-bar-count" id="photo-count"></p>
+            <p class="action-bar-totals" id="photo-eta"></p>
+          </div>
+          <div class="upload-bar" id="photo-upload" hidden>
+            <div class="progress" role="progressbar" aria-label="Sending photos" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" id="photo-start">
+            <span class="spinner" aria-hidden="true"></span><span class="btn-label">Upscale photos</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Videos -->
+    <section class="view" data-view="videos" aria-labelledby="videos-title" hidden>
+      <div class="intro">
+        <h1 id="videos-title" tabindex="-1">Make a video 4K</h1>
+        <p class="lede">Add a video and get a sharper 4K copy with the sound kept.</p>
+      </div>
+
+      <form class="steps" id="video-form" novalidate>
+        <section class="step" id="video-step-file" aria-labelledby="video-step-file-title">
+          <span class="step-num" aria-hidden="true"><span class="step-digit">1</span><svg class="icon"><use href="#i-check"/></svg></span>
+          <div class="step-head">
+            <h2 class="step-title" id="video-step-file-title">Add your video</h2>
+            <p class="step-summary" id="video-step-file-summary" hidden></p>
+            <button type="button" class="step-toggle" data-step-toggle aria-expanded="true" aria-controls="video-step-file-body"><span class="step-toggle-text">Hide</span><span class="sr-only">: Add your video</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+          </div>
+          <div class="step-body" id="video-step-file-body">
+            <div class="dropzone" id="video-drop" data-pick="video-input">
+              <span class="crop crop-tl" aria-hidden="true"></span><span class="crop crop-tr" aria-hidden="true"></span>
+              <span class="crop crop-bl" aria-hidden="true"></span><span class="crop crop-br" aria-hidden="true"></span>
+              <span class="dz-icon" aria-hidden="true"><svg class="icon"><use href="#i-video"/></svg></span>
+              <p class="dz-title">Drag a video here</p>
+              <button type="button" class="btn btn-secondary dz-button" data-pick="video-input">
+                <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span class="dz-button-text">Choose a video</span>
+              </button>
+              <p class="dz-hint">MP4, MOV, MKV, AVI, WebM and most other video files</p>
+              <input type="file" id="video-input" accept="video/*,.mov,.mp4,.m4v,.mkv,.avi,.webm,.3gp,.mts,.m2ts,.wmv" hidden aria-label="Choose a video">
+            </div>
+            <div class="video-card" id="video-card" hidden></div>
+            <p class="field-error" id="video-error" role="alert" hidden></p>
+          </div>
+        </section>
+
+        <section class="step" id="video-step-mode" aria-labelledby="video-step-mode-title">
+          <span class="step-num" aria-hidden="true"><span class="step-digit">2</span><svg class="icon"><use href="#i-check"/></svg></span>
+          <div class="step-head">
+            <h2 class="step-title" id="video-step-mode-title">Choose the quality</h2>
+            <p class="step-summary" id="video-step-mode-summary" hidden></p>
+            <button type="button" class="step-toggle" data-step-toggle aria-expanded="true" aria-controls="video-step-mode-body"><span class="step-toggle-text">Hide</span><span class="sr-only">: Choose the quality</span><svg class="icon" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+          </div>
+          <div class="step-body" id="video-step-mode-body">
+            <div class="modes" id="video-modes" role="radiogroup" aria-labelledby="video-step-mode-title"></div>
+          </div>
+        </section>
+
+        <div class="start">
+          <div class="start-row">
+            <button type="button" class="btn btn-secondary btn-lg" id="video-preview">
+              <span class="spinner" aria-hidden="true"></span><span class="btn-label">Preview first 3 seconds</span>
+            </button>
+            <button type="submit" class="btn btn-primary btn-lg" id="video-start">
+              <span class="spinner" aria-hidden="true"></span><span class="btn-label">Upscale whole video</span>
+            </button>
+          </div>
+          <p class="start-help" id="video-start-help">Try the preview first to check the look before the long run.</p>
+          <div class="upload-bar" id="video-upload" hidden>
+            <div class="progress" role="progressbar" aria-label="Sending video" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+          </div>
+          <p class="field-error" id="video-submit-error" role="alert" hidden></p>
+          <p class="keep-going"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span>You can close this page while it works. The video keeps going, and the result shows up here when you come back.</span></p>
+        </div>
+      </form>
+    </section>
+
+    <!-- Results, shared by Photos and Videos -->
+    <section class="results" id="results" aria-labelledby="results-title" hidden>
+      <div class="results-head">
+        <h2 id="results-title" tabindex="-1">Your results</h2>
+        <p class="muted" id="results-note"></p>
+        <button type="button" class="btn btn-quiet btn-sm" id="results-clear" hidden><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Clear all finished</button>
+      </div>
+      <p class="empty" id="results-empty">Finished pictures and videos show up here. It keeps working even if you close this page.</p>
+      <ol class="jobs" id="job-list"></ol>
+      <button type="button" class="btn btn-quiet" id="jobs-more" hidden>Show older results</button>
+    </section>
+
+    <!-- Settings (host only) -->
+    <section class="view view-page" data-view="settings" aria-labelledby="settings-title" hidden>
+      <h1 id="settings-title" tabindex="-1">Settings</h1>
+
+      <section class="panel" aria-labelledby="share-title">
+        <div class="panel-head">
+          <span class="panel-icon" aria-hidden="true"><svg class="icon"><use href="#i-wifi"/></svg></span>
+          <h2 id="share-title">Sharing on Wi-Fi</h2>
+        </div>
+        <div id="share-body"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="password-title">
+        <div class="panel-head">
+          <span class="panel-icon" aria-hidden="true"><svg class="icon"><use href="#i-lock"/></svg></span>
+          <h2 id="password-title">Password for guests</h2>
+        </div>
+        <p class="panel-status" id="password-status"></p>
+        <form class="inline-form" id="password-form" novalidate>
+          <label class="field-label" for="new-password" id="new-password-label">Choose a password</label>
+          <div class="inline-row">
+            <input class="input" id="new-password" type="password" autocomplete="new-password" minlength="6" aria-describedby="new-password-hint">
+            <button type="submit" class="btn btn-primary" id="password-save">Set password</button>
+          </div>
+          <p class="hint" id="new-password-hint">Use at least 6 characters. Guests type it once on their phone or computer; you never need it on this computer.</p>
+        </form>
+        <button type="button" class="btn btn-quiet btn-danger-text" id="password-clear" hidden>Remove password</button>
+        <p class="form-status" id="password-feedback" role="status"></p>
+
+        <div class="switch-row">
+          <div class="switch-text">
+            <label class="field-label" for="allow-guests-cloud">Let guests use my cloud account</label>
+            <p class="hint" id="allow-guests-help">Guests can then pick cloud quality, and you pay for it.</p>
+          </div>
+          <input class="switch" type="checkbox" role="switch" id="allow-guests-cloud" aria-describedby="allow-guests-help">
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="services-title">
+        <div class="panel-head">
+          <span class="panel-icon" aria-hidden="true"><svg class="icon"><use href="#i-cloud"/></svg></span>
+          <h2 id="services-title">Cloud services</h2>
+        </div>
+        <ul class="service-list" id="service-list"></ul>
+        <p class="form-status" id="services-feedback" role="status"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="defaults-title">
+        <div class="panel-head">
+          <span class="panel-icon" aria-hidden="true"><svg class="icon"><use href="#i-sliders"/></svg></span>
+          <h2 id="defaults-title">Starting choices</h2>
+        </div>
+        <div class="field">
+          <label class="field-label" for="default-mode">Quality picked for new photos</label>
+          <select class="input select" id="default-mode"></select>
+        </div>
+        <div class="field" role="radiogroup" aria-labelledby="default-format-label">
+          <p class="field-label" id="default-format-label">Save photos as</p>
+          <div class="chips chips-sm" id="default-format-options"></div>
+        </div>
+        <p class="form-status" id="defaults-feedback" role="status"></p>
+      </section>
+    </section>
+
+    <!-- About -->
+    <section class="view view-page" data-view="about" aria-labelledby="about-title" hidden>
+      <h1 id="about-title" tabindex="-1">About Re:Solution</h1>
+      <p class="prose about-lede">Re:Solution is resolution plus solving a problem: it makes small pictures big and sharp, and videos 4K. It's free and open source (MIT licence).</p>
+      <p class="promise"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><span>Your images stay on this computer unless you choose a cloud mode.</span></p>
+      <p class="muted" id="about-machine"></p>
+
+      <div class="maker">
+        <p class="maker-name">Designed by Swati Srivastava</p>
+        <ul class="credit-links">
+          <li><a class="credit-link" href="https://swatisrivastava.in" target="_blank" rel="noopener" aria-label="Swati Srivastava's portfolio (opens in a new tab)"><span class="credit-mark" aria-hidden="true"></span><span>Portfolio</span></a></li>
+          <li><a class="credit-link" href="https://www.linkedin.com/in/swatisrivastava1010" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-linkedin"/></svg><span>LinkedIn</span><span class="sr-only"> (opens in a new tab)</span></a></li>
+        </ul>
+      </div>
+
+      <h2>The models that do the work</h2>
+      <p class="muted">Free models made by these people. Thank you to each of them.</p>
+      <div class="table-wrap">
+        <table class="credits">
+          <thead><tr><th scope="col">Model</th><th scope="col">Used for</th><th scope="col">Made by</th><th scope="col">Licence</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><a href="https://github.com/ByteDance-Seed/SeedVR" target="_blank" rel="noopener noreferrer">SeedVR2-3B</a></td>
+              <td>Photo-real</td>
+              <td>ByteDance Seed (weights packaged by numz)</td>
+              <td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache-2.0</a></td>
+            </tr>
+            <tr>
+              <td><a href="https://github.com/Phhofm/models" target="_blank" rel="noopener noreferrer">4xBHI_dat2_real</a></td>
+              <td>Faithful photos, Best video</td>
+              <td>Philip Hofmann (Phhofm)</td>
+              <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC-BY-4.0</a></td>
+            </tr>
+            <tr>
+              <td><a href="https://github.com/Phhofm/models" target="_blank" rel="noopener noreferrer">4xNomos2_hq_dat2</a></td>
+              <td>Faithful, for photos that are already sharp</td>
+              <td>Philip Hofmann (Phhofm)</td>
+              <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC-BY-4.0</a></td>
+            </tr>
+            <tr>
+              <td><a href="https://huggingface.co/Kim2091/ClearRealityV1" target="_blank" rel="noopener noreferrer">4x-ClearRealityV1</a></td>
+              <td>Fast photos, Fast video</td>
+              <td>Kim2091</td>
+              <td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache-2.0</a></td>
+            </tr>
+            <tr>
+              <td><a href="https://github.com/xinntao/Real-ESRGAN" target="_blank" rel="noopener noreferrer">RealESRGAN_x4plus_anime_6B</a></td>
+              <td>Illustrations and anime</td>
+              <td>Xintao Wang</td>
+              <td><a href="https://opensource.org/license/bsd-3-clause" target="_blank" rel="noopener noreferrer">BSD-3-Clause</a></td>
+            </tr>
+            <tr>
+              <td><a href="https://github.com/xinntao/Real-ESRGAN" target="_blank" rel="noopener noreferrer">realesr-general-x4v3</a></td>
+              <td>Balanced video</td>
+              <td>Xintao Wang</td>
+              <td><a href="https://opensource.org/license/bsd-3-clause" target="_blank" rel="noopener noreferrer">BSD-3-Clause</a></td>
+            </tr>
+            <tr>
+              <td><a href="https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet" target="_blank" rel="noopener noreferrer">YuNet</a></td>
+              <td>Spots faces, so Re:Solution can suggest a style</td>
+              <td>Shiqi Yu and the OpenCV Zoo team</td>
+              <td><a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>The software it is built with</h2>
+      <div class="table-wrap">
+        <table class="credits">
+          <thead><tr><th scope="col">Software</th><th scope="col">Used for</th><th scope="col">Made by</th><th scope="col">Licence</th></tr></thead>
+          <tbody>
+            <tr><td><a href="https://github.com/filipstrand/mflux" target="_blank" rel="noopener noreferrer">mflux</a></td><td>Runs Photo-real on Apple Silicon Macs</td><td>Filip Strand</td><td><a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT</a></td></tr>
+            <tr><td><a href="https://github.com/ml-explore/mlx" target="_blank" rel="noopener noreferrer">MLX</a></td><td>Apple GPU maths for Photo-real</td><td>Apple</td><td><a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT</a></td></tr>
+            <tr><td><a href="https://github.com/numz/ComfyUI-SeedVR2_VideoUpscaler" target="_blank" rel="noopener noreferrer">SeedVR2 Video Upscaler</a></td><td>Runs Photo-real on NVIDIA PCs</td><td>numz</td><td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache-2.0</a></td></tr>
+            <tr><td><a href="https://pytorch.org" target="_blank" rel="noopener noreferrer">PyTorch</a></td><td>Runs the other models on the graphics chip</td><td>PyTorch Foundation</td><td><a href="https://opensource.org/license/bsd-3-clause" target="_blank" rel="noopener noreferrer">BSD-3-Clause</a></td></tr>
+            <tr><td><a href="https://github.com/chaiNNer-org/spandrel" target="_blank" rel="noopener noreferrer">spandrel</a></td><td>Loads the models</td><td>chaiNNer team</td><td><a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT</a></td></tr>
+            <tr><td><a href="https://ffmpeg.org" target="_blank" rel="noopener noreferrer">FFmpeg</a></td><td>Reads and writes videos</td><td>FFmpeg developers</td><td><a href="https://ffmpeg.org/legal.html" target="_blank" rel="noopener noreferrer">GPL (bundled FFmpeg build)</a></td></tr>
+            <tr><td><a href="https://github.com/imageio/imageio-ffmpeg" target="_blank" rel="noopener noreferrer">imageio-ffmpeg</a></td><td>Brings FFmpeg along</td><td>imageio contributors</td><td><a href="https://opensource.org/license/bsd-2-clause" target="_blank" rel="noopener noreferrer">BSD-2-Clause</a></td></tr>
+            <tr><td><a href="https://github.com/PyAV-Org/PyAV" target="_blank" rel="noopener noreferrer">PyAV</a></td><td>Checks video details</td><td>PyAV contributors</td><td><a href="https://opensource.org/license/bsd-3-clause" target="_blank" rel="noopener noreferrer">BSD-3-Clause</a></td></tr>
+            <tr><td><a href="https://python-pillow.org" target="_blank" rel="noopener noreferrer">Pillow</a></td><td>Opens and saves photos</td><td>Jeffrey A. Clark and contributors</td><td><a href="https://github.com/python-pillow/Pillow/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT-CMU</a></td></tr>
+            <tr><td><a href="https://github.com/bigcat88/pillow_heif" target="_blank" rel="noopener noreferrer">pillow-heif</a></td><td>Opens iPhone HEIC photos</td><td>bigcat88 and contributors</td><td><a href="https://opensource.org/license/bsd-3-clause" target="_blank" rel="noopener noreferrer">BSD-3-Clause</a></td></tr>
+            <tr><td><a href="https://github.com/letmaik/rawpy" target="_blank" rel="noopener noreferrer">rawpy</a> with <a href="https://www.libraw.org" target="_blank" rel="noopener noreferrer">LibRaw</a></td><td>Opens camera RAW photos</td><td>Maik Riechert; LibRaw LLC</td><td><a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT</a>; LGPL-2.1 or CDDL-1.0</td></tr>
+            <tr><td><a href="https://github.com/baseplate-admin/resvg-py" target="_blank" rel="noopener noreferrer">resvg-py</a> with <a href="https://github.com/linebender/resvg" target="_blank" rel="noopener noreferrer">resvg</a></td><td>Draws SVG pictures at full size</td><td>resvg-py and resvg contributors</td><td><a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT</a>; <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache-2.0</a> or <a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT</a></td></tr>
+            <tr><td><a href="https://github.com/opencv/opencv-python" target="_blank" rel="noopener noreferrer">OpenCV</a></td><td>Picture checks for the style suggestions</td><td>OpenCV team</td><td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache-2.0</a></td></tr>
+            <tr><td><a href="https://numpy.org" target="_blank" rel="noopener noreferrer">NumPy</a></td><td>Image maths</td><td>NumPy developers</td><td><a href="https://opensource.org/license/bsd-3-clause" target="_blank" rel="noopener noreferrer">BSD-3-Clause</a></td></tr>
+            <tr><td><a href="https://github.com/fastapi/fastapi" target="_blank" rel="noopener noreferrer">FastAPI</a></td><td>This page's server</td><td>Sebasti&aacute;n Ram&iacute;rez</td><td><a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT</a></td></tr>
+            <tr><td><a href="https://github.com/encode/uvicorn" target="_blank" rel="noopener noreferrer">Uvicorn</a></td><td>This page's server</td><td>Encode</td><td><a href="https://opensource.org/license/bsd-3-clause" target="_blank" rel="noopener noreferrer">BSD-3-Clause</a></td></tr>
+            <tr><td><a href="https://github.com/Kludex/python-multipart" target="_blank" rel="noopener noreferrer">python-multipart</a></td><td>Receives uploaded files</td><td>Andrew Dunham and Marcelo Trylesinski</td><td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache-2.0</a></td></tr>
+            <tr><td><a href="https://github.com/encode/httpx" target="_blank" rel="noopener noreferrer">HTTPX</a></td><td>Model downloads and cloud services</td><td>Encode</td><td><a href="https://opensource.org/license/bsd-3-clause" target="_blank" rel="noopener noreferrer">BSD-3-Clause</a></td></tr>
+            <tr><td><a href="https://github.com/huggingface/huggingface_hub" target="_blank" rel="noopener noreferrer">huggingface_hub</a></td><td>Downloads Photo-real</td><td>Hugging Face</td><td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache-2.0</a></td></tr>
+            <tr><td><a href="https://github.com/jaraco/keyring" target="_blank" rel="noopener noreferrer">keyring</a></td><td>Keeps cloud keys in the system keychain</td><td>Jason R. Coombs</td><td><a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT</a></td></tr>
+            <tr><td><a href="https://github.com/tox-dev/platformdirs" target="_blank" rel="noopener noreferrer">platformdirs</a></td><td>Finds the right folders on each computer</td><td>platformdirs team</td><td><a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT</a></td></tr>
+            <tr><td><a href="https://github.com/astral-sh/uv" target="_blank" rel="noopener noreferrer">uv</a></td><td>Installs everything on first start</td><td>Astral</td><td><a href="https://opensource.org/license/mit" target="_blank" rel="noopener noreferrer">MIT or Apache-2.0</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>The fonts</h2>
+      <p class="muted">Both are free under the SIL Open Font License and come with Re:Solution, so nothing is fetched from the internet.</p>
+      <div class="table-wrap">
+        <table class="credits">
+          <thead><tr><th scope="col">Font</th><th scope="col">Used for</th><th scope="col">Made by</th><th scope="col">Licence</th></tr></thead>
+          <tbody>
+            <tr><td><a href="https://fonts.google.com/specimen/Noto+Serif" target="_blank" rel="noopener noreferrer">Noto Serif</a></td><td>Headings</td><td>Google, the Noto project</td><td><a href="https://openfontlicense.org" target="_blank" rel="noopener noreferrer">OFL-1.1</a></td></tr>
+            <tr><td><a href="https://fonts.google.com/specimen/Inter" target="_blank" rel="noopener noreferrer">Inter</a></td><td>Everything else</td><td>Rasmus Andersson</td><td><a href="https://openfontlicense.org" target="_blank" rel="noopener noreferrer">OFL-1.1</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Cloud services</h2>
+      <p class="prose">fal.ai, Replicate and Magnific are only used if you connect your own account and pick a cloud quality. Each photo you send goes to that service, under that service's own terms. Face enhancement is always turned off so faces stay the same.</p>
+
+      <section class="about-samples" id="about-samples" aria-labelledby="about-samples-title" hidden>
+        <h2 id="about-samples-title">Sample pictures</h2>
+        <p class="muted">The "Try a sample" pictures are public domain or CC0. Thank you to:</p>
+        <ul class="sample-credits" id="sample-credits"></ul>
+      </section>
+
+      <h2>Use it from the command line</h2>
+      <p class="prose">For power users: the same engine runs in Terminal on a Mac, from the app's folder (usually Applications › Re-Solution in your home folder):</p>
+      <pre class="cli"><code>.venv/bin/python -m upscaler image photo.jpg --size 8k --mode faithful
+.venv/bin/python -m upscaler video clip.mov --mode fast</code></pre>
+      <p class="muted">On Windows, open PowerShell in the app's folder and use <code>.venv\Scripts\python</code> instead. Add <code>--help</code> to see every choice.</p>
+      <p class="muted" id="about-version"></p>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <div class="site-foot-inner">
+      <p class="foot-credit">Designed by Swati Srivastava</p>
+      <ul class="credit-links">
+        <li><a class="credit-link" href="https://swatisrivastava.in" target="_blank" rel="noopener" aria-label="Swati Srivastava's portfolio (opens in a new tab)"><span class="credit-mark" aria-hidden="true"></span><span>Portfolio</span></a></li>
+        <li><a class="credit-link" href="https://www.linkedin.com/in/swatisrivastava1010" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-linkedin"/></svg><span>LinkedIn</span><span class="sr-only"> (opens in a new tab)</span></a></li>
+      </ul>
+      <p class="foot-note">Re:Solution is free and open source (MIT).</p>
+    </div>
+  </footer>
+
+  <!-- Shown while a file is dragged over the page: it can be dropped anywhere. -->
+  <div class="drop-overlay" id="drop-overlay" aria-hidden="true" hidden>
+    <div class="drop-overlay-frame">
+      <span class="crop crop-tl"></span><span class="crop crop-tr"></span><span class="crop crop-bl"></span><span class="crop crop-br"></span>
+      <svg class="icon" aria-hidden="true"><use href="#i-image"/></svg>
+      <p id="drop-overlay-text">Drop to add your pictures</p>
+    </div>
+  </div>
+
+  <!-- Share on Wi-Fi (host only): the switch, the address with a QR code, and what to watch for -->
+  <dialog class="dialog share" id="share-dialog" aria-labelledby="share-dialog-title" aria-describedby="share-dialog-lede">
+    <button type="button" class="dialog-close" data-close aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="dialog-art share-art" aria-hidden="true"><svg class="icon"><use href="#i-wifi"/></svg></div>
+    <h2 id="share-dialog-title">Share on Wi-Fi</h2>
+    <p class="muted share-lede" id="share-dialog-lede">Let phones and computers on your home Wi-Fi use Re:Solution. Their pictures are made here, on this computer.</p>
+    <div class="switch-row share-switch-row" id="share-switch-row">
+      <div class="switch-text">
+        <label class="field-label" for="share-switch">Share on Wi-Fi</label>
+        <p class="hint" id="share-switch-help">Only this computer can use Re:Solution right now.</p>
+      </div>
+      <input class="switch" type="checkbox" role="switch" id="share-switch" aria-describedby="share-switch-help">
+    </div>
+    <p class="form-status" id="share-feedback" role="status"></p>
+    <div class="share-details" id="share-details"></div>
+  </dialog>
+
+  <!-- Preview styles: the same small spot in each style, at full size (filled in by js/styles.js) -->
+  <dialog class="dialog dialog-wide styles" id="styles-dialog" aria-labelledby="styles-title">
+    <button type="button" class="dialog-close" data-close aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <header class="styles-head">
+      <h2 id="styles-title">Preview styles</h2>
+      <p class="muted" id="styles-sub"></p>
+    </header>
+    <div class="styles-body" id="styles-body"></div>
+    <footer class="styles-foot" id="styles-foot"></footer>
+  </dialog>
+
+  <!-- One picture's details: its suggestion and why, its own quality, Preview styles, remove (filled in by app.js) -->
+  <dialog class="drawer" id="photo-drawer" aria-labelledby="drawer-title">
+    <div class="drawer-head">
+      <div class="drawer-heading">
+        <h2 id="drawer-title" tabindex="-1"></h2>
+        <p class="muted drawer-position" id="drawer-position"></p>
+      </div>
+      <button type="button" class="dialog-close" data-close aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+    <div class="drawer-foot">
+      <button type="button" class="btn btn-secondary btn-sm" id="drawer-prev"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Previous</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="drawer-next">Next<svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+    </div>
+  </dialog>
+
+  <!-- A finished picture, full screen: the whole picture at Fit, every pixel at 100% and 200%, Before and After as a slider or side by side -->
+  <dialog class="viewer" id="viewer-dialog" aria-labelledby="viewer-title">
+    <div class="viewer-head">
+      <div class="viewer-heading">
+        <h2 id="viewer-title" tabindex="-1"></h2>
+        <p class="muted viewer-position" id="viewer-position"></p>
+      </div>
+      <div class="viewer-actions" id="viewer-actions"></div>
+      <button type="button" class="dialog-close" data-close aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="viewer-main">
+      <button type="button" class="viewer-nav viewer-prev" id="viewer-prev" aria-label="Previous picture" title="Previous picture"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
+      <div class="viewer-stage" id="viewer-stage"></div>
+      <button type="button" class="viewer-nav viewer-next" id="viewer-next" aria-label="Next picture" title="Next picture"><svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+    </div>
+    <div class="viewer-info" id="viewer-info"></div>
+  </dialog>
+
+  <!-- A finished video next to its original, played together (filled in by js/videocompare.js) -->
+  <dialog class="viewer viewer-video" id="video-compare-dialog" aria-labelledby="video-compare-title">
+    <div class="viewer-head">
+      <div class="viewer-heading">
+        <h2 id="video-compare-title" data-vc="title" tabindex="-1"></h2>
+        <p class="muted viewer-position" data-vc="subtitle"></p>
+      </div>
+      <div class="viewer-actions" data-vc="actions"></div>
+      <button type="button" class="dialog-close" data-close aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="viewer-main viewer-main-video">
+      <div class="viewer-stage" data-vc="stage"></div>
+    </div>
+  </dialog>
+
+  <!-- First-run Photo-real download -->
+  <dialog class="dialog" id="photoreal-dialog" aria-labelledby="pr-title">
+    <button type="button" class="dialog-close" data-close aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="dialog-art" aria-hidden="true"><svg class="icon"><use href="#i-sparkle"/></svg></div>
+    <h2 id="pr-title">Get Photo-real ready</h2>
+
+    <div class="pr-part" data-part="ask">
+      <p class="dialog-lede">Photo-real needs a one-time 7 GB download (about 10 minutes on fast Wi-Fi).</p>
+      <p class="muted">It's saved on this computer, so you only do this once. Your photos start by themselves when it's done.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-primary" id="pr-download" autofocus><span class="spinner" aria-hidden="true"></span><span class="btn-label">Download now</span></button>
+        <button type="button" class="btn btn-secondary" data-use-faithful>Use Faithful this time</button>
+      </div>
+    </div>
+
+    <div class="pr-part" data-part="progress" hidden>
+      <p class="dialog-lede">Downloading Photo-real&hellip;</p>
+      <div class="progress progress-lg" id="pr-progress" role="progressbar" aria-label="Photo-real download" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+      <div class="progress-row">
+        <p id="pr-message"></p>
+        <p class="muted tabular" id="pr-eta"></p>
+      </div>
+      <p class="muted">Keep this page open and your photos start by themselves when it's done. You can hide this window.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-secondary" data-close>Hide</button>
+        <button type="button" class="btn btn-quiet btn-danger-text" id="pr-cancel">Stop download</button>
+      </div>
+    </div>
+
+    <div class="pr-part" data-part="error" hidden>
+      <div class="alert alert-danger" role="alert">
+        <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+        <p id="pr-error-text">The download stopped.</p>
+      </div>
+      <p class="muted">Check the internet connection, then try again. It carries on from where it stopped.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-primary" id="pr-retry"><svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg>Try again</button>
+        <button type="button" class="btn btn-secondary" data-use-faithful>Use Faithful this time</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Cloud setup wizard (filled in by wizard.js) -->
+  <dialog class="dialog dialog-wide wizard" id="wizard-dialog" aria-labelledby="wiz-title">
+    <button type="button" class="dialog-close" data-close aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <header class="wiz-head">
+      <h2 id="wiz-title">Unlock cloud quality</h2>
+      <ol class="wiz-steps" aria-label="Setup steps">
+        <li data-step="1"><span class="wiz-dot"><span>1</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span><span class="wiz-step-label">Choose a service</span></li>
+        <li data-step="2"><span class="wiz-dot"><span>2</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span><span class="wiz-step-label">Get a key</span></li>
+        <li data-step="3"><span class="wiz-dot"><span>3</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span><span class="wiz-step-label">Connect</span></li>
+        <li data-step="4"><span class="wiz-dot"><span>4</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span><span class="wiz-step-label">Done</span></li>
+      </ol>
+    </header>
+    <div class="wiz-body" id="wiz-body"></div>
+    <footer class="wiz-foot" id="wiz-foot"></footer>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+  <div class="sr-only" id="announcer" aria-live="polite"></div>
+</body>
+</html>

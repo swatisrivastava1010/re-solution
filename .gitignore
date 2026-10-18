@@ -1,0 +1,21 @@
+# Installed packages and caches: uv makes these on each computer.
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Your own test pictures and videos stay on your computer.
+samples/*
+!samples/README.md
+
+# Half-finished downloads.
+*.part
+
+# Which PyTorch build this computer uses (written by the installer and launchers).
+.torch-variant
+
+# The Re-Solution app that "install.sh --no-shortcuts" makes inside the install folder.
+/Re-Solution.app/
+
+# macOS folder settings.
+.DS_Store

@@ -1,0 +1,74 @@
+[project]
+name = "upscaler"
+version = "1.0.0"
+description = "Re:Solution - free local image (up to 16K) and video (4K) upscaler for family and friends"
+requires-python = ">=3.12,<3.13"
+license = "MIT"
+dependencies = [
+    "spandrel>=0.4.2,<0.5",
+    "numpy>=2",
+    "pillow>=11,<13",           # Pillow 13.0.0 fails to import (numbers._IntegralLike)
+    "pillow-heif>=0.18",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "python-multipart>=0.0.9",
+    "httpx>=0.27",
+    "keyring>=25",
+    "platformdirs>=4",
+    "av>=14",
+    "imageio-ffmpeg>=0.5",
+    "huggingface-hub>=0.30",
+    "rawpy>=0.24",             # camera RAW (MIT; LibRaw LGPL/CDDL)
+    "resvg-py>=0.5",           # SVG rendering (MIT; resvg Apache-2.0 OR MIT)
+    "opencv-python>=4.10",     # face/text signals for auto-suggest (Apache-2.0); mflux uses the same package
+    "segno>=1.6",              # QR code for the Share on Wi-Fi panel (BSD-3-Clause, pure Python)
+    "mflux==0.23.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
+]
+
+# PyTorch comes in two builds. install.sh / install.ps1 and the Start Re-Solution
+# launchers pick one, save it in .torch-variant and run uv with --extra <name>:
+#   cpu   - every Mac (Apple GPU support, MPS, is built into these wheels) and PCs
+#           without a recent NVIDIA card
+#   cu130 - PCs with an NVIDIA card and driver 580 or newer
+# torchvision is listed next to torch so both always come from the same build.
+# Developers: uv sync --extra cpu (or --extra cu130). Without an extra, torch still
+# arrives from PyPI as a dependency of spandrel, but on Windows that build is CPU-only.
+[project.optional-dependencies]
+cpu = ["torch>=2.6", "torchvision>=0.21"]
+cu130 = ["torch>=2.6", "torchvision>=0.21"]
+
+[dependency-groups]
+dev = ["pytest>=8", "respx>=0.21"]
+
+[tool.uv]
+package = false
+conflicts = [[{ extra = "cpu" }, { extra = "cu130" }]]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu130", extra = "cu130" },
+]
+torchvision = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu130", extra = "cu130" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "gpu: needs an Apple (MPS) or NVIDIA (CUDA) GPU",
+    "slow: takes more than 30 seconds",
+    "network: downloads models",
+]
+addopts = "-m 'not gpu and not slow and not network'"

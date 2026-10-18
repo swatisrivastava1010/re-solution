@@ -1,0 +1,135 @@
+# Continuous testing: every push to main and every pull request runs Re:Solution's tests on
+# GitHub's own Windows, Apple Silicon Mac and Linux computers (free for public repositories).
+#
+# Those computers have no NVIDIA card and the tests don't download the AI models, so the tests
+# marked gpu, slow or network are skipped, as they are by default on any computer
+# (pyproject.toml: addopts). On Windows the installer tests also run under both PowerShell 7
+# (pwsh) and Windows PowerShell 5.1 (powershell), which is what most Windows PCs open, and the
+# app is started once to check it answers.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: Windows
+          - os: macos-15
+            name: Mac, Apple Silicon
+          - os: ubuntu-latest
+            name: Linux
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      # opencv-python needs libGL on Linux. GitHub's Ubuntu computers usually have it already.
+      - name: Add the library OpenCV needs (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          if ! ldconfig -p | grep -q 'libGL\.so\.1'; then
+            sudo apt-get update -q
+            sudo apt-get install -y -q --no-install-recommends libgl1
+          fi
+
+      # The processor build of PyTorch, exactly as locked: the same packages the installers
+      # give a Mac or a PC without NVIDIA. mflux (MLX) only installs on the Mac.
+      - name: Install the app's packages
+        run: uv sync --frozen --extra cpu
+        timeout-minutes: 15
+
+      - name: Run the tests
+        run: uv run --frozen --extra cpu pytest -q
+        timeout-minutes: 25
+
+      # The installer tests choose their PowerShell from RE_SOLUTION_TEST_POWERSHELL, and fail
+      # (rather than skip) if it isn't there.
+      - name: Installer tests with PowerShell 7 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          RE_SOLUTION_TEST_POWERSHELL: pwsh
+        run: uv run --frozen --extra cpu pytest -q -rs tests/test_install_scripts.py
+        timeout-minutes: 10
+
+      - name: Installer tests with Windows PowerShell 5.1 (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        env:
+          RE_SOLUTION_TEST_POWERSHELL: powershell
+        run: |
+          # Windows PowerShell 5.1 treats any line a program writes to stderr as an error, so only
+          # the exit code decides.
+          $ErrorActionPreference = 'Continue'
+          uv run --frozen --extra cpu pytest -q -rs tests/test_install_scripts.py
+          exit $LASTEXITCODE
+        timeout-minutes: 10
+
+      - name: Start-up check (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        timeout-minutes: 5
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false  # exit codes are checked by hand below
+
+          $version = uv run --frozen --extra cpu python -m upscaler --version
+          if ($LASTEXITCODE -ne 0) { throw 'python -m upscaler --version failed' }
+          Write-Host $version
+          if ($version -notmatch '^Re:Solution \d+\.\d+') { throw "Unexpected version line: $version" }
+
+          # Started with the app folder's own Python, so stopping it stops the app itself.
+          $python = Join-Path $PWD '.venv\Scripts\python.exe'
+          $out = Join-Path $env:RUNNER_TEMP 'server-out.log'
+          $err = Join-Path $env:RUNNER_TEMP 'server-err.log'
+          $server = Start-Process -FilePath $python -PassThru -NoNewWindow `
+            -ArgumentList '-m', 'upscaler', 'serve', '--no-browser', '--port', '7899' `
+            -RedirectStandardOutput $out -RedirectStandardError $err
+          try {
+            $status = $null
+            $deadline = (Get-Date).AddMinutes(3)
+            while (-not $status -and -not $server.HasExited -and (Get-Date) -lt $deadline) {
+              Start-Sleep -Seconds 2
+              $answer = curl.exe --silent --fail --max-time 60 http://127.0.0.1:7899/api/status
+              if ($LASTEXITCODE -eq 0 -and $answer) { $status = $answer | ConvertFrom-Json }
+            }
+            if (-not $status) { throw 'Re:Solution did not answer at http://127.0.0.1:7899/api/status' }
+            Write-Host "/api/status: $($status.app.name) $($status.version), host: $($status.is_host), device: $($status.hardware.device)"
+            if ($status.app.name -ne 'Re:Solution' -or $status.is_host -ne $true -or -not $status.version) {
+              throw "Unexpected /api/status answer: $answer"
+            }
+          }
+          finally {
+            if (-not $server.HasExited) { Stop-Process -Id $server.Id -Force }
+            [void]$server.WaitForExit(10000)
+            Write-Host '--- what the app printed ---'
+            Get-Content $out, $err -ErrorAction SilentlyContinue
+          }
+          if (-not (Select-String -Path $out -Pattern 'Re:Solution is running' -SimpleMatch -Quiet)) {
+            throw 'The app did not print its "Re:Solution is running" message'
+          }
+          exit 0

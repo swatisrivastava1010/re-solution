@@ -1,0 +1,10 @@
+# Keep each platform's scripts in their native line endings.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.sh text eol=lf
+*.command text eol=lf
+*.py text eol=lf
+*.jpg binary
+*.png binary
+*.woff2 binary
+*.svg text eol=lf
