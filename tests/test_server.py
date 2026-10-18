@@ -2083,7 +2083,8 @@ def test_wifi_listener_really_serves_the_app(env, monkeypatch):
     assert stopping_took < server.WIFI_GRACE_SECONDS
     follower.join(5)
     assert not follower.is_alive()
-    with pytest.raises(httpx.ConnectError):
+    # Refused at once on Macs and Linux; Windows retries a refused local connection for about 2 s, so it may time out.
+    with pytest.raises((httpx.ConnectError, httpx.ConnectTimeout)):
         httpx.get(f"{address}/api/status", timeout=2, trust_env=False)
     assert queue.list() == []
 

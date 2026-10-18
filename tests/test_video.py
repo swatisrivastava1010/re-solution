@@ -410,6 +410,13 @@ def test_ffmpeg_on_windows_gets_no_window_and_its_own_process_group(monkeypatch)
     assert ffmpeg.process_options() == {"creationflags": 0x08000000 | 0x00000200}
 
 
+# The FFmpeg that imageio-ffmpeg bundles for Linux crashes (signal 11) when it starts decoding an MPEG-TS
+# file part way through. Macs and Windows, the platforms Re:Solution supports, decode these files fine.
+LINUX_TS_CRASH = pytest.mark.skipif(
+    sys.platform.startswith("linux"), reason="the bundled Linux FFmpeg crashes seeking inside MPEG-TS files"
+)
+
+
 def decoded_frames(cmd: list[str], w: int, h: int) -> np.ndarray:
     out = subprocess.run(cmd, capture_output=True, check=True).stdout
     return np.frombuffer(out, np.uint8).reshape(-1, h, w, 3)
@@ -420,8 +427,8 @@ def decoded_frames(cmd: list[str], w: int, h: int) -> np.ndarray:
     [
         # 29.97 fps in a QuickTime file with a 600 timescale (as iPhones write): frame times aren't whole ticks.
         ("ntsc.mov", "30000/1001", (*H264, "-video_track_timescale", "600"), "aac"),
-        ("camcorder.mts", 25, H264, "aac"),  # MPEG-TS, whose timestamps start at 1.4 s
-        ("spanned.mts", 25, (*H264, *STARTS_30S_IN), "aac"),
+        pytest.param("camcorder.mts", 25, H264, "aac", marks=LINUX_TS_CRASH),  # MPEG-TS, timestamps start at 1.4 s
+        pytest.param("spanned.mts", 25, (*H264, *STARTS_30S_IN), "aac", marks=LINUX_TS_CRASH),
         ("dvd.mpg", 25, DVD_MPEG2, "mp2"),  # MPEG program stream
         ("phone.mp4", 30, (*H264, "-fps_mode", "vfr"), "aac"),  # variable frame rate, see below
     ],
@@ -624,8 +631,8 @@ def test_resume_skips_done_segments(tmp_path, fake_model, small_output):
 @pytest.mark.parametrize(
     "name, video_args, audio_codec",
     [
-        ("camcorder.mts", H264, "aac"),
-        ("spanned.mts", (*H264, *STARTS_30S_IN), "aac"),
+        pytest.param("camcorder.mts", H264, "aac", marks=LINUX_TS_CRASH),
+        pytest.param("spanned.mts", (*H264, *STARTS_30S_IN), "aac", marks=LINUX_TS_CRASH),
         ("dvd.mpg", DVD_MPEG2, "mp2"),
     ],
 )
@@ -643,6 +650,7 @@ def test_camcorder_and_dvd_video_keeps_every_frame_in_order(
     assert out["duration"] == pytest.approx(3.0, abs=0.1)
 
 
+@LINUX_TS_CRASH
 def test_resumed_camcorder_video_carries_on_at_the_right_frame(tmp_path, fake_model, small_output, monkeypatch):
     monkeypatch.setattr(pipeline, "SEGMENT_SECONDS", 1)
     src = numbered_clip(tmp_path / "camcorder.mts", video_args=(*H264, *STARTS_30S_IN))

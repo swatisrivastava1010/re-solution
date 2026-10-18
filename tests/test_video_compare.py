@@ -147,6 +147,8 @@ def test_a_preview_is_compared_with_the_same_first_seconds(tmp_path):
 def test_odd_sizes_lose_a_row_but_say_the_real_size(tmp_path):
     odd = ("-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv444p")  # 4:2:0 can't hold odd sides
     original = numbered_clip(tmp_path / "clip.mp4", size=(66, 37), seconds=1, audio=False, video=odd)
+    if facts(original)["size"] != (66, 37):  # some FFmpeg builds (Linux CI) round the test clip itself to even sides
+        pytest.skip("this FFmpeg build cannot make an odd-sized test clip")
     result = fake_result(original, tmp_path / "out.mp4", audio=())
     info, _ = prepare(tmp_path / "compare", original, result)
     assert info["original"] == {"width": 66, "height": 37} and info["has_audio"] is False
